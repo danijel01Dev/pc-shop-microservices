@@ -1,0 +1,18 @@
+# services:
+#   api:
+#     build: ./pc-shop-api
+#     ports:
+#       - "${DOCKER_PORT}:3001"
+#     env_file:
+#       - .env
+#     depends_on:
+#       - postgres
+
+#   postgres:
+#     image: postgres:16
+#     ports:
+#       - "${POSTGRES_PORT}:5432"
+#   environment:
+#   POSTGRES_USER: ${POSTGRES_USER}
+#   POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#   POSTGRES_DB: ${POSTGRES_DB}
