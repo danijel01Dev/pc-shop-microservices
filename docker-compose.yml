@@ -15,7 +15,11 @@ services:
   payment-service:
     build: ./payment-service
 
+    env_file:
+      - ./payment-service/.env
+
     depends_on:
+      - payment-postgres
       - redis
 
   postgres:
@@ -28,6 +32,17 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
       POSTGRES_DB: pcshop
+
+  payment-postgres:
+    image: postgres:16
+
+    ports:
+      - "5433:5432"
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: payments
 
   redis:
     image: redis:7

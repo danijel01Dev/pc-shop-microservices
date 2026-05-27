@@ -12,7 +12,7 @@ import {
 
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateOrderDto, PaymentMethod } from './dto/create-order.dto';
 import { PaginationDto } from '../products/dto/pagination.dto';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
@@ -26,7 +26,7 @@ export class OrdersService {
   //==== Create Order  >  order created in transaction  ====
 
   async create(userId: number, dto: CreateOrderDto) {
-    return await this.db.$transaction(async (tx) => {
+    const order = await  this.db.$transaction(async (tx) => {
       const getId = dto.items.map((x) => x.productId);
       const products = await tx.product.findMany({
         where: {
@@ -85,15 +85,41 @@ export class OrdersService {
           userId: userId,
           total: totalPrice,
           orderNumber: Math.floor(Date.now() / 1000) + Math.floor(Math.random() * 10000),
+          status : 'PENDING',
 
           items: {
             create: orderItemsData,
           },
         },
       });
+        return orderCreate;
+    })
+    try{const paymentResult = await firstValueFrom(
+          this.paymentClient.send(
+            'process_payment',
+            {amount : order.total,
+              orderId : order.id,
+              paymentMethod : 'CARD',
+              userId : userId,
+              currency : dto.currency
 
-      return orderCreate;
-    });
+            }
+          )
+        )
+      
+      return   { order : order, 
+        paymenturl : paymentResult.url,
+      status : 'PENDING'};}
+      catch(err){
+        await this.db.order.update({
+          where : { id : order.id},
+          data : {
+            status : 'CANCELLED'
+          }
+        })
+        console.log('payment failed', err);
+        throw new InternalServerErrorException('payment failed , order cancelled')
+      }
   }
   // === Get orders  >excluded 'DELIVERED' ===
   async findAll(pagDto: PaginationDto) {
