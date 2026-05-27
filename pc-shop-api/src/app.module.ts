@@ -8,13 +8,29 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-store';
+import { BullModule } from '@nestjs/bullmq';
+
 @Module({
   imports: [
     UsersModule,
     ProductsModule,
     OrdersModule,
-    AuthModule,
+    AuthModule,CacheModule.register({
+    isGlobal : true,
+    useFactory: async () => ({store : await redisStore,
+    host : process.env.REDIS_HOST || 'localhost',
+    port : Number(process.env.REDIS_PORT) || 6379,
+    ttl : 60,
+  })}),
+BullModule.forRoot({
+  connection : {
+    host : process.env.REDIS_HOST || 'localhost',
+    port : Number(process.env.REDIS_PORT) || 6379
+  }
+  
+}),
     ConfigModule.forRoot({
       isGlobal: true,
     }),

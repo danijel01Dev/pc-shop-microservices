@@ -10,6 +10,7 @@ import {
   Req,
   Query,
   ParseIntPipe,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -22,6 +23,7 @@ import { UserResponseDto, UserEmailDto, UserRoleDto } from './dto/api-user.dto';
 import { PaginationDto } from '../products/dto/pagination.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ApiErrorResponses } from '../error-decorator/ErrorDecoratorSwagger';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
@@ -41,6 +43,7 @@ export class UsersController {
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.createUser(createUserDto);
   }
+  @UseInterceptors(CacheInterceptor)
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
   @Get('many')

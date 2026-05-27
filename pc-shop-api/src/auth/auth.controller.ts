@@ -18,7 +18,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'User created successfully',
-    type: AuthResponseDto,
+    type: LoginDto,
   })
   @ApiErrorResponses()
   @Throttle({ default: { limit: 5, ttl: 60000 } })
@@ -31,7 +31,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'User Log In successfull',
-    type: AuthResponseDto,
+    type: LoginDto,
   })
   @ApiErrorResponses()
   @Throttle({ default: { limit: 5, ttl: 60000} })
@@ -39,7 +39,7 @@ export class AuthController {
   login(@Body() dto: LoginDto) {
     return this.auth.login(dto.email, dto.password);
   }
-  @ApiBearerAuth('access-token')
+  
   @ApiOperation({ summary: 'Refresh/verify Token' })
   @ApiBody({
   type: RefreshDto,

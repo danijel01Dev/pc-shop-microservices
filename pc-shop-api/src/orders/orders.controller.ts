@@ -10,6 +10,7 @@ import {
   Query,
   UseGuards,
   ParseIntPipe,
+  UseInterceptors,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -21,6 +22,7 @@ import { Roles } from '../auth/jwt/JWT-Decorator/role.decorator';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
  import { OrderResponseDto, PagResponseDto } from './dto/api-order.dto';
 import { ApiErrorResponses } from '../error-decorator/ErrorDecoratorSwagger';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @Controller('orders')
 export class OrdersController {
@@ -39,6 +41,7 @@ export class OrdersController {
     const userId = req.user.sub;
     return this.ordersService.create(userId, createOrderDto);
   }
+  @UseInterceptors(CacheInterceptor)
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
@@ -53,6 +56,7 @@ export class OrdersController {
   findAll(@Query() pagdto: PaginationDto) {
     return this.ordersService.findAll(pagdto);
   }
+  @UseInterceptors(CacheInterceptor)
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')

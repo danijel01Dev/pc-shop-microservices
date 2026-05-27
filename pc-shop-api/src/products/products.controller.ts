@@ -27,7 +27,7 @@ import { ProductResponseDto } from './dto/api-product.dto';
 import { PaginatedProductsDto } from './dto/api-product.dto';
 import { ApiErrorResponses } from '../error-decorator/ErrorDecoratorSwagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Max } from 'class-validator';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @Controller('products')
 export class ProductsController {
@@ -54,7 +54,7 @@ export class ProductsController {
 
     return this.productsService.create(createProductDto, awsURL);
   }
-
+  @UseInterceptors(CacheInterceptor)
   @Get()
   @ApiOperation({ summary: 'Get all Products' })
   @ApiResponse({ status: 200, type: [PaginatedProductsDto] })
